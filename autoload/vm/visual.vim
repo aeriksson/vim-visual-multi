@@ -145,13 +145,15 @@ fun! s:vblock(extend) abort
     "create cursors downwards until end of block
     call cursor(start)
 
-    while getpos('.')[1] < end[0]
-        call vm#commands#add_cursor_down(0, 1)
-    endwhile
-
-    " ensure there's at least a cursor
-    if !len(s:R())
-        call s:G.new_cursor()
+    if ( end[0] > start[0] )
+        while getpos('.')[1] < end[0]
+            call vm#commands#add_cursor_down(0, 1)
+        endwhile
+    else
+        " ensure there's at least a cursor
+        if !len(s:R())
+            call s:G.new_cursor()
+        endif
     endif
 
     if a:extend
