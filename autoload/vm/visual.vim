@@ -132,6 +132,14 @@ fun! s:vblock(extend) abort
     "blockwise
     let start = getpos("'<")[1:2]
     let end = getpos("'>")[1:2]
+
+    if ( start[1] > end[1] )
+        " swap ends because top-right or bottom-left corner is selected
+        let temp = start[1]
+        let start[1] = end[1]
+        let end[1] = temp
+    endif
+
     let w = end[1] - start[1]
 
     "create cursors downwards until end of block
