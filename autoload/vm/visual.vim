@@ -141,6 +141,11 @@ fun! s:vblock(extend) abort
         call vm#commands#add_cursor_down(0, 1)
     endwhile
 
+    " ensure there's at least a cursor
+    if !len(s:R())
+        call s:G.new_cursor()
+    endif
+
     if a:extend
         call vm#commands#motion('l', w, 1, 0)
     endif
