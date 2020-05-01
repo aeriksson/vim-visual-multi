@@ -4,11 +4,11 @@
 fun! vm#visual#add(mode) abort
     " Add visually selected region to current regions.
     call s:backup_map()
-    let [ w, h ] = [ 0, 0 ]
+    let pos = getpos('.')[1:2]
 
     if a:mode ==# 'v'     | call s:vchar()
     elseif a:mode ==# 'V' | call s:vline()
-    else                  | let w = s:vblock(1)
+    else                  | let s:v.direction = s:vblock(1)
     endif
 
     call s:visual_merge()
@@ -18,12 +18,11 @@ fun! vm#visual#add(mode) abort
         call s:G.remove_empty_lines()
     elseif a:mode ==# 'v'
         for r in s:R()
-            if r.h | let h = 1 | break | endif
+            if r.h | let s:v.multiline = 1 | break | endif
         endfor
     endif
 
-    if h | let s:v.multiline = 1 | endif
-    call s:G.update_and_select_region({'id': s:v.IDs_list[-1]})
+    call s:G.update_and_select_region(pos)
 endfun
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -134,13 +133,16 @@ fun! s:vblock(extend) abort
     let end = getpos("'>")[1:2]
 
     if ( start[1] > end[1] )
-        " swap ends because top-right or bottom-left corner is selected
+        " swap columns because top-right or bottom-left corner is selected
         let temp = start[1]
         let start[1] = end[1]
         let end[1] = temp
+        let inverted = line(".") == line("'>")
+    else
+        let inverted = line(".") == line("'<")
     endif
 
-    let w = end[1] - start[1]
+    let block_width = end[1] - start[1]
 
     "create cursors downwards until end of block
     call cursor(start)
@@ -157,9 +159,9 @@ fun! s:vblock(extend) abort
     endif
 
     if a:extend
-        call vm#commands#motion('l', w, 1, 0)
+        call vm#commands#motion('l', block_width, 1, 0)
     endif
-    return w
+    return !inverted
 endfun
 
 fun! s:backup_map() abort
